@@ -1,3 +1,14 @@
+## STABLECOIN FEATURES
+1.  Relative stability: Anchored or pegged to 1 USD
+    1.  Chainlink price feed
+    2.  Set a function to exchange ETH or BTC to USD
+2.  Stability mechanism(Minting): Algorithmic (Decentralized)
+    1.  People can only mint the stable coin with enough collateral (coded)
+3.  Collateral: Exogenous (Crypto)
+    1.  wETH
+    2.  wBTC
+
+
 ## Foundry
 
 **Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
