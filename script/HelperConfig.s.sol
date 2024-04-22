@@ -48,11 +48,9 @@ contract HelperConfig is Script {
         vm.startBroadcast();
         MockV3Aggregator ethUsdPriceFeed = new MockV3Aggregator(DECIMALS_PRICE_FEED, ETH_USD_PRICE);
         ERC20Mock weth = new ERC20Mock();
-        weth.mint(msg.sender, 1000e18);
 
         MockV3Aggregator btcUsdPriceFeed = new MockV3Aggregator(DECIMALS_PRICE_FEED, BTC_USD_PRICE);
         ERC20Mock wbtc = new ERC20Mock();
-        wbtc.mint(msg.sender, 1000e18);
         vm.stopBroadcast();
 
         return NetworkConfig({
