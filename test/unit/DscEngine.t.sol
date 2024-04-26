@@ -34,6 +34,8 @@ contract DscEngineTest is Test {
     address wbtcUsdPriceFeed;
     address weth;
     address wbtc;
+    ERC20Mock wethMock;
+    ERC20Mock wbtcMock;
 
     address[] public allowedTokensCollateral;
     address[] public allowedTokensPriceFeed;
@@ -42,7 +44,7 @@ contract DscEngineTest is Test {
         sepoliaFork = vm.createFork(vm.envString("SEPOLIA_RPC_URL"));
         deployer = new DeployDSC();
         (dsc, engine, config) = deployer.run();
-        (ethUsdPriceFeed, wbtcUsdPriceFeed, weth, wbtc,) = config.activeNetworkConfig();
+        (ethUsdPriceFeed, wbtcUsdPriceFeed, wethMock, wbtcMock,) = config.activeNetworkConfig();
         ERC20Mock(weth).mint(USER, STARTING_BALANCE);
         i_engineInitWethBalance = ERC20Mock(weth).balanceOf(address(engine));
     }
@@ -63,7 +65,7 @@ contract DscEngineTest is Test {
         DSCEngine dscEngine = new DSCEngine(allowedTokensCollateral, allowedTokensPriceFeed, address(dsc));
         for (uint i = 0; i < allowedTokensCollateral.length; i++) {
             assertEq(dscEngine.getAllowedCollateralTokens()[i], allowedTokensCollateral[i]);
-            assertEq(dscEngine.priceFeeds(allowedTokensCollateral[i]), allowedTokensPriceFeed[i]);
+            assertEq(dscEngine.getPriceFeedFor(allowedTokensCollateral[i]), allowedTokensPriceFeed[i]);
         }
     }
 
@@ -147,7 +149,7 @@ contract DscEngineTest is Test {
     function testRevertsIfDscToMintZero() public {
         vm.expectRevert(DSCEngine.DSCEngine__MustBeMoreThanZero.selector);
         vm.prank(USER);
-        engine.mintDsc(0);
+        engine.mintDsc(0, weth);
     }
 
     function testRevertsIfNotEnoughCollateral() public {
@@ -155,7 +157,7 @@ contract DscEngineTest is Test {
         uint256 healthFactor = engine.getExpectedHealthFactorFor(AMOUNT_DSC_TO_MINT, collateralValueInUsd);
         vm.expectRevert(abi.encodeWithSignature("DSCEngine__HealthFactorIsTooLow(uint256)", healthFactor));
         vm.prank(USER);
-        engine.mintDsc(AMOUNT_DSC_TO_MINT);
+        engine.mintDsc(AMOUNT_DSC_TO_MINT, weth);
     }
 
     function testRevertsIfDscToMintTooHigh() 
@@ -165,13 +167,13 @@ contract DscEngineTest is Test {
         uint256 healthFactor = engine.getExpectedHealthFactorFor(maxDscAllowedToMint + ONE_WEI, collateralValueInUsd);
         vm.expectRevert(abi.encodeWithSignature("DSCEngine__HealthFactorIsTooLow(uint256)", healthFactor));
         vm.prank(USER);
-        engine.mintDsc(maxDscAllowedToMint + ONE_WEI);
+        engine.mintDsc(maxDscAllowedToMint + ONE_WEI, weth);
     }
 
     function testShouldIncreaseMintedDsc() 
         public depositWethCollateralBefore(USER, AMOUNT_COLLATERAL) {
         vm.prank(USER);
-        engine.mintDsc(AMOUNT_DSC_TO_MINT);
+        engine.mintDsc(AMOUNT_DSC_TO_MINT, weth);
         (uint256 dscMinted, ) = engine.getAccountInfo(USER);
         assertEq(AMOUNT_DSC_TO_MINT, dscMinted);
     }
@@ -221,12 +223,12 @@ contract DscEngineTest is Test {
 
     function testShouldDecreaseCollateralBalance() 
         public depositWethCollateralBefore(USER, AMOUNT_COLLATERAL) {
-        uint256 collateralBeforeRedeem = engine.depositedCollaterals(USER, weth);
+        uint256 collateralBeforeRedeem = engine.getDepositedCollateralFor(USER, weth);
         vm.prank(USER);
         engine.redeemCollateral(weth, AMOUNT_COLLATERAL);
         assertEq(
             collateralBeforeRedeem - AMOUNT_COLLATERAL, 
-            engine.depositedCollaterals(USER, weth)
+            engine.getDepositedCollateralFor(USER, weth)
         );
     }
 
@@ -245,13 +247,13 @@ contract DscEngineTest is Test {
     function testRevertsIfAmntToBurnZero() public {
         vm.expectRevert(DSCEngine.DSCEngine__MustBeMoreThanZero.selector);
         vm.prank(USER);
-        engine.burnDsc(0);
+        engine.burnDsc(0, weth);
     }
 
     function testRevertsIfUserBalanceLTAmntToBurn() public {
         vm.expectRevert(DSCEngine.DSCEngine__DscAmntExceedsBalance.selector);
         vm.prank(USER);
-        engine.burnDsc(ONE_WEI);
+        engine.burnDsc(ONE_WEI, weth);
     }
 
     function testShouldDecreaseUserMintedDsc() 
@@ -262,7 +264,7 @@ contract DscEngineTest is Test {
         engine.depositCollateralAndMintDsc(weth, AMOUNT_COLLATERAL, AMOUNT_DSC_TO_MINT);
         (uint256 dscMintedBalanceBefore, ) = engine.getAccountInfo(USER);
         uint256 dscWalletBalanceBefore = ERC20(dsc).balanceOf(USER);
-        engine.burnDsc(AMOUNT_DSC_TO_MINT);
+        engine.burnDsc(AMOUNT_DSC_TO_MINT, weth);
         vm.stopPrank();
         (uint256 dscMintedBalanceAfter, ) = engine.getAccountInfo(USER);
         assertEq(

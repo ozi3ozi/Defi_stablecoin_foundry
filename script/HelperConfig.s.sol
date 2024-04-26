@@ -3,15 +3,15 @@
 pragma solidity ^0.8.24;
 
 import {Script} from "forge-std/Script.sol";
-import {MockV3Aggregator} from "../test/mocks/MockV3Aggregator.sol";
+import {MockV3Aggregator} from "test/mocks/MockV3Aggregator.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/token/ERC20Mock.sol";
 
 contract HelperConfig is Script {
     struct NetworkConfig {
         address wethUsdPriceFeed;
         address wbtcUsdPriceFeed;
-        address weth;
-        address wbtc;
+        ERC20Mock weth;
+        ERC20Mock wbtc;
         uint256 deployerKey;
     }
 
@@ -34,8 +34,8 @@ contract HelperConfig is Script {
         return NetworkConfig({
             wethUsdPriceFeed: 0x694AA1769357215DE4FAC081bf1f309aDC325306,
             wbtcUsdPriceFeed: 0x1b44F3514812d835EB1BDB0acB33d3fA3351Ee43,
-            weth: 0xdd13E55209Fd76AfE204dBda4007C227904f0a81,
-            wbtc: 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599,
+            weth: ERC20Mock(0xdd13E55209Fd76AfE204dBda4007C227904f0a81),
+            wbtc: ERC20Mock(0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599),
             deployerKey: vm.envUint("PRIVATE_KEY")
         });
     }
@@ -56,8 +56,8 @@ contract HelperConfig is Script {
         return NetworkConfig({
             wethUsdPriceFeed: address(ethUsdPriceFeed),
             wbtcUsdPriceFeed: address(btcUsdPriceFeed),
-            weth: address(weth),
-            wbtc: address(wbtc),
+            weth: weth,
+            wbtc: wbtc,
             deployerKey: DEFAULT_ANVIL_KEY
         });
     }
