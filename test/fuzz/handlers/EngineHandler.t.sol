@@ -250,11 +250,13 @@ contract EngineHandler is Test {
         uint256 userDscBalanceBeforeLiquidate = dsc.balanceOf(currentActor);
         uint256 userCollateralBalanceBeforeLiquidate = currentTokenCollateral.balanceOf(currentActor);
 
-        currentPriceFeed.updateAnswer(1800e8);
+        int newPrice = 1900e8;
+        uint newPrice18Dec = 1900e18;
+        currentPriceFeed.updateAnswer(newPrice);
 
         dsc.approve(address(engine), amountMinted);
         engine.liquidate(address(currentTokenCollateral), currentActor, amountMinted);
-        uint256 collateralRedeemed = (amountMinted * 1e18) / 1800e18;
+        uint256 collateralRedeemed = (amountMinted * 1e18) / newPrice18Dec;
         uint256 liquidatorFee = collateralRedeemed * 10 / 100;
 
         uint256 userDscBalanceAfterLiquidate = dsc.balanceOf(currentActor);
@@ -272,7 +274,13 @@ contract EngineHandler is Test {
         );
 
 
-        sumDepositedCollateral[address(currentTokenCollateral)] += _amountCollateral - collateralRedeemed - liquidatorFee;
+        console.log("sumDepositedCollateral[address(currentTokenCollateral)]");
+        console.log(_amountCollateral);
+        console.log(collateralRedeemed + liquidatorFee);
+        console.log(collateralRedeemed);
+        console.log(liquidatorFee);
+        sumDepositedCollateral[address(currentTokenCollateral)] += _amountCollateral;
+        sumDepositedCollateral[address(currentTokenCollateral)] -= (collateralRedeemed + liquidatorFee);
         sumDepositedCollateralsUsd += engine.getUsdValue(address(currentTokenCollateral), _amountCollateral);
     }
 }

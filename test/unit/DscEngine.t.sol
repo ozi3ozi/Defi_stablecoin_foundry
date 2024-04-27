@@ -45,8 +45,10 @@ contract DscEngineTest is Test {
         deployer = new DeployDSC();
         (dsc, engine, config) = deployer.run();
         (ethUsdPriceFeed, wbtcUsdPriceFeed, wethMock, wbtcMock,) = config.activeNetworkConfig();
-        ERC20Mock(weth).mint(USER, STARTING_BALANCE);
-        i_engineInitWethBalance = ERC20Mock(weth).balanceOf(address(engine));
+        weth = address(wethMock);
+        wbtc = address(wbtcMock);
+        wethMock.mint(USER, STARTING_BALANCE);
+        i_engineInitWethBalance = wethMock.balanceOf(address(engine));
     }
 
     ///////////////////////////
@@ -105,7 +107,7 @@ contract DscEngineTest is Test {
 
     function testRevertsIfCollateralZero() public {
         vm.startPrank(USER);
-        ERC20Mock(weth).approve(address(engine), AMOUNT_COLLATERAL);
+        wethMock.approve(address(engine), AMOUNT_COLLATERAL);
 
         vm.expectRevert(DSCEngine.DSCEngine__MustBeMoreThanZero.selector);
         engine.depositCollateral(weth, 0);
@@ -138,8 +140,8 @@ contract DscEngineTest is Test {
     function testShouldTransferTokenCollateralToEngine() 
         public
         depositWethCollateralBefore(USER, AMOUNT_COLLATERAL) {
-        assertEq(ERC20Mock(weth).balanceOf(address(engine)), i_engineInitWethBalance + AMOUNT_COLLATERAL);
-        assertEq(ERC20Mock(weth).balanceOf(USER), STARTING_BALANCE - AMOUNT_COLLATERAL);
+        assertEq(wethMock.balanceOf(address(engine)), i_engineInitWethBalance + AMOUNT_COLLATERAL);
+        assertEq(wethMock.balanceOf(USER), STARTING_BALANCE - AMOUNT_COLLATERAL);
     }
 
     //////////////////////
@@ -234,10 +236,10 @@ contract DscEngineTest is Test {
 
     function testShouldSendRedeemedAmntToUser() 
         public depositWethCollateralBefore(USER, AMOUNT_COLLATERAL) {
-        uint256 balanceBefore = ERC20Mock(weth).balanceOf(USER);
+        uint256 balanceBefore = wethMock.balanceOf(USER);
         vm.prank(USER);
         engine.redeemCollateral(weth, AMOUNT_COLLATERAL);
-        assertEq(ERC20Mock(weth).balanceOf(USER), balanceBefore + AMOUNT_COLLATERAL);
+        assertEq(wethMock.balanceOf(USER), balanceBefore + AMOUNT_COLLATERAL);
     }
 
     //////////////////////

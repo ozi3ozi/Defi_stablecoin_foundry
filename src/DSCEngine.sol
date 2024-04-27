@@ -284,7 +284,7 @@ contract DSCEngine is ReentrancyGuard {
         return _getHealthFactor(_user);
     }
 
-    function getExpectedHealthFactorFor(uint256 totalDscMinted, uint256 collateralValueInUsd) external pure returns (uint256) {
+    function getExpectedHealthFactorFor(uint256 totalDscMinted, uint256 collateralValueInUsd) external view returns (uint256) {
         return _calculateHealthFactor(totalDscMinted, collateralValueInUsd);
     }
 
@@ -316,9 +316,14 @@ contract DSCEngine is ReentrancyGuard {
         return _calculateHealthFactor(totalDscMinted, collateralValueInUsd);
     }
 
-    function _calculateHealthFactor(uint256 totalDscMinted, uint256 collateralValueInUsd) internal pure returns (uint256) {
+    function _calculateHealthFactor(uint256 totalDscMinted, uint256 collateralValueInUsd) internal view returns (uint256) {
         if (totalDscMinted == 0) return MIN_HEALTH_FACTOR; // To avoid division by 0
-
+        
+        console.log("_calculateHealthFactor()");
+        console.log("totalDscMinted");
+        console.log(totalDscMinted);
+        console.log("collateralValueInUsd");
+        console.log(collateralValueInUsd);
         uint256 collateralAdjustedForThreshold = (collateralValueInUsd * LIQUIDATION_THRESHOLD) / LIQUIDATION_PRECISION;
         return (collateralAdjustedForThreshold * PRECISION) / totalDscMinted;
     }

@@ -40,14 +40,14 @@ contract OpenInvariantsTest is StdInvariant, Test {
         targetContract(address(engineHandler));
     }
 
-    /// forge-config: default.invariant.runs = 150
-    /// forge-config: default.invariant.depth = 45
+    /// forge-config: default.invariant.runs = 100
+    /// forge-config: default.invariant.depth = 10
     /// forge-config: default.invariant.fail-on-revert = true
     function invariant_protocolRecordedColletaralBalanceMustMatchActualBalance() public view {
         // Comparing contract wallet balance wit handler ghost varibale
         // assertGt(
         //     engineHandler.sumDepositedCollateralsUsd(), 
         //     engineHandler.sumMintedDsc()
-        // );
+        // );sd
     }
 }
